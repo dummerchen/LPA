@@ -1,2 +1,2 @@
 # CLPSR
-continual learning super resolution
+Learning Prompt Adapters for Forgetting-Free Continual Image Super-resolution
