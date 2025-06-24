@@ -1,0 +1,2 @@
+from models.select_network import define_G
+from models.select_model import define_Model
