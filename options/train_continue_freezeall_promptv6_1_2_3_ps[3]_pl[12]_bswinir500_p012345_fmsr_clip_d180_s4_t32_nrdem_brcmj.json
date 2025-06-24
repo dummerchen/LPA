@@ -1,0 +1,138 @@
+{
+  // main train continue
+  "task": "continue_freezeall_promptv6_1_2_3_ps3_pl12_bswinir500_p012345_fmsr_clip_d180_s4_t32_nrdem_brcmj",
+  "model": "Continue",
+  "flag": [["msr_features_lr_centercrop96_nyu_bx4","msr_features_lr_centercrop96_realsr_rx4","msr_features_lr_centercrop96_div_cx4", "msr_features_lr_centercrop96_reds_mx4","msr_features_lr_centercrop96_manga_jx4"],
+    ["clip_features_lr_nyu_bx4","clip_features_lr_realsr_rx4","clip_features_lr_div_cx4","clip_features_lr_reds_mx4","clip_features_lr_manga_jx4"]],
+  "gpu_ids": [
+    0
+  ],
+  "dist": true,
+  "scale": 4,
+  "n_channels": 3,
+  "freeze_layers":["freeze","all"],
+  "unfreeze_layers": ["prompt"],
+  "path": {
+    "root": "/data/blfu/clpsr/superresolution",
+    "pretrained_netG": "./model_zoo/swinir/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth",
+    "pretrained_netE": null,
+    "pretrained_extract": null
+  },
+  "datasets": {
+    "train": {
+      "name": "train_dataset",
+      "dataset_type": "ContinueSR",
+      "dataroot_H": [
+        "/data/sr/nyu_data/train_HR/",
+        "/data/sr/RealSR/train_HR/x4",
+        "/data/sr/DIV2K/train_HR/",
+        "/data/sr/REDS/train_HR/",
+        "/data/sr/MANGA109/train_HR/"
+      ],
+      "dataroot_L": [
+        "/data/sr/nyu_data/train_LR_bicubic/x4",
+        "/data/sr/RealSR/train_LR_real/x4",
+        "/data/sr/DIV2K/train_LR_complex/x4",
+        "/data/sr/REDS/train_LR_linear_motion_blur/x4",
+        "/data/sr/MANGA109/train_LR_jpeg/x4"
+      ],
+      "H_size": [128,128,128,128,128],
+      "dataloader_shuffle": true,
+      "dataloader_num_workers": 16,
+      "dataloader_batch_size": 16
+    },
+    "test": {
+      "name": "test_dataset",
+      "dataset_type": "ContinueSR",
+      "dataroot_H": [
+        "/data/sr/nyu_data/test_HR",
+        "/data/sr/RealSR/test_HR/x4",
+        "/data/sr/DIV2K/test_HR",
+        "/data/sr/REDS/test_HR",
+        "/data/sr/MANGA109/test_HR"
+      ],
+      "dataroot_L": [
+        "/data/sr/nyu_data/test_LR_bicubic/x4",
+        "/data/sr/RealSR/test_LR_real/x4",
+        "/data/sr/DIV2K/test_LR_complex/x4",
+        "/data/sr/REDS/test_LR_linear_motion_blur/x4",
+        "/data/sr/MANGA109/test_LR_jpeg/x4"
+      ]
+    }
+  },
+  "netG": {
+    "backbone": {
+      "net_type": "SwinIRv5_0_0",
+      "upscale": 4,
+      "in_chans": 3,
+      "prompt_layers": [0,1,2,3,4,5],
+      "use_prompt_block": [0,1,2,3,4,5],
+      "img_size": 32,
+      "window_size": 8,
+      "img_range": 1.0,
+      "depths": [
+        6,
+        6,
+        6,
+        6,
+        6,
+        6
+      ],
+      "embed_dim": 180,
+      "num_heads": [
+        6,
+        6,
+        6,
+        6,
+        6,
+        6
+      ],
+      "mlp_ratio": 2
+    },
+    "prompt": {
+      "net_type": "Promptv6_1_2_3",
+      "n_tasks": 5,
+      "temperature": [-2, 1],
+      "emb_dim": [180,180],
+      "prompt_length": [12,12],
+      "prompt_size": [3,3],
+      "prompt_layers": [[0,1,2,3,4,5],[0,1,2,3,4,5]],
+      "use_prompt_block": [[0,1,2,3,4,5],[0,1,2,3,4,5]]
+    },
+    "freeze_extract": {
+      "net_type":["msr","clip"],
+      "prune": false
+    }
+  },
+  "train": {
+    "G_lossfn_type": [
+      "nn.L1Loss"
+    ],
+    "G_lossfn_weight": [
+      1.0
+    ],
+    "E_decay": 0,
+    "G_optimizer_type": "adam",
+    "G_optimizer_lr": [4e-4,4e-4,4e-4,4e-4, 4e-4],
+    "G_optimizer_wd": 0,
+    "G_optimizer_clipgrad": 0.5,
+    "G_optimizer_reuse": true,
+    "G_scheduler_type": "MultiStepLR",
+    "G_scheduler_milestones": [
+      [2000000],
+      [2048000],
+      [3072000],
+      [3584000],
+      [4608000]
+    ],
+    "G_scheduler_gamma": 0.5,
+    "G_regularizer_orthstep": null,
+    "G_regularizer_clipstep": null,
+    "G_param_strict": false,
+    "E_param_strict": true,
+    "Ex_param_strict": true,
+    "checkpoint_test": ["32*16000","32*8000","32*8000","32*64000","32*4000"],
+    "checkpoint_save": ["32*8000","32*8000","32*8000","32*8000","32*4000"],
+    "checkpoint_print": "32*500"
+  }
+}
